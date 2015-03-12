@@ -3,7 +3,6 @@
 
 import logging
 
-
 def index():
     """This is the main page of the wiki. You will find the title of the requested page in request.args(0).
     If this is None, then just serve the latest revision of something titled "Main page" or something 
@@ -60,6 +59,9 @@ def index():
                 if form.accepted:
                     redirect(URL('default','index',args=[title],vars=dict(edit='y')))
                 return dict(display_title=display_title,content=content,form=form)
+
+def recipes():
+    return
 
 def history():
     """This page lists all revisions of a given topic, and allows the user to revert a topic

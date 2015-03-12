@@ -172,3 +172,17 @@
 [2015-03-11 18:00:40] EDIT craftastic/models/tables.py: 4
 [2015-03-11 18:02:38] EDIT craftastic/models/tables.py: 0
 [2015-03-11 18:02:41] EDIT craftastic/models/tables.py: 0
+[2015-03-11 18:06:22] CREATE default/game.html: 0
+[2015-03-11 18:06:46] EDIT craftastic/views/default/game.html: -1
+[2015-03-11 18:07:01] EDIT craftastic/controllers/default.py: 0
+[2015-03-11 18:10:43] EDIT craftastic/models/tables.py: 1
+[2015-03-11 18:12:29] EDIT craftastic/models/tables.py: 0
+[2015-03-11 18:25:00] EDIT craftastic/models/tables.py: 1
+[2015-03-11 18:27:34] EDIT craftastic/models/tables.py: 1
+[2015-03-11 18:27:41] EDIT craftastic/controllers/default.py: 0
+[2015-03-11 19:24:35] EDIT craftastic/controllers/default.py: 1
+[2015-03-11 19:24:47] EDIT craftastic/controllers/default.py: 1
+[2015-03-11 22:33:04] EDIT craftastic/models/tables.py: 0
+[2015-03-11 22:33:05] EDIT craftastic/controllers/default.py: 0
+[2015-03-11 22:33:07] EDIT craftastic/views/default/game.html: 0
+[2015-03-11 22:33:10] EDIT craftastic/views/default/game.html: 0

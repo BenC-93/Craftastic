@@ -27,16 +27,12 @@ db.define_table('recipe',
                 Field('game_ver'),
                 Field('author',default=get_first_name()),
                 Field('user_id',db.auth_user,default=auth.user_id),
-                Field('description','text'),
+                Field('body','text'),
                 Field('item_names','list:string'),
                 Field('item_amount','list:integer'),
+                Field('craft_time','double'),
                 Field('picture','upload'),
                 )
-# 'recipe' table settings
-db.recipe.description.represent = represent_content
-db.recipe.author.writeable = False
-db.recipe.user_id.readable = False
-db.recipe.user_id.writeable = False
 
 db.define_table('revision',
                 Field('page_id'),
@@ -77,3 +73,11 @@ db.revision.author.writeable = False
 db.revision.user_id.readable = False
 db.revision.user_id.writeable = False
 db.revision.creation_date.writeable = False
+
+# 'recipe' table settings
+db.recipe.author.writeable = False
+db.recipe.user_id.readable = False
+db.recipe.user_id.writeable = False
+db.recipe.body.represent = represent_content
+db.recipe.body.label = 'Description'
+db.recipe.craft_time.default = 0
