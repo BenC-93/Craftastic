@@ -161,3 +161,14 @@
 [2015-02-11 23:33:18] EDIT homework4/controllers/default.py: 0
 [2015-02-11 23:35:38] EDIT homework4/controllers/default.py: 0
 [2015-02-11 23:36:35] EDIT homework4/controllers/default.py: 0
+[2015-03-11 16:13:24] EDIT craftastic/controllers/default.py: 0
+[2015-03-11 16:15:15] DELETE craftastic/views/default/test.html: -15
+[2015-03-11 16:48:16] EDIT craftastic/controllers/default.py: -44
+[2015-03-11 16:48:17] EDIT craftastic/models/tables.py: 4
+[2015-03-11 16:51:58] EDIT craftastic/models/tables.py: 0
+[2015-03-11 16:52:00] EDIT craftastic/controllers/default.py: 0
+[2015-03-11 16:52:37] EDIT craftastic/models/tables.py: 0
+[2015-03-11 17:56:59] EDIT craftastic/models/tables.py: 6
+[2015-03-11 18:00:40] EDIT craftastic/models/tables.py: 4
+[2015-03-11 18:02:38] EDIT craftastic/models/tables.py: 0
+[2015-03-11 18:02:41] EDIT craftastic/models/tables.py: 0

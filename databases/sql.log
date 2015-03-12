@@ -457,3 +457,200 @@ success!
 success!
 success!
 success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2015-03-11T16:48:52.510000
+CREATE TABLE game(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title CHAR(512)
+);
+success!
+timestamp: 2015-03-11T16:52:39.430000
+CREATE TABLE recipe(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game CHAR(512),
+    ver CHAR(512)
+);
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+timestamp: 2015-03-11T17:57:03.534000
+CREATE TABLE gametable(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title CHAR(512)
+);
+success!
+timestamp: 2015-03-11T17:57:03.622000
+ALTER TABLE recipe ADD picture CHAR(512);
+timestamp: 2015-03-11T17:57:03.702000
+ALTER TABLE recipe ADD user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE;
+timestamp: 2015-03-11T17:57:03.932000
+ALTER TABLE recipe ADD description TEXT;
+timestamp: 2015-03-11T17:57:04.072000
+ALTER TABLE recipe ADD author CHAR(512);
+timestamp: 2015-03-11T17:57:04.152000
+ALTER TABLE recipe ADD game_ver CHAR(512);
+timestamp: 2015-03-11T17:57:04.242000
+ALTER TABLE recipe ADD game_id CHAR(512);
+timestamp: 2015-03-11T17:57:04.332000
+ALTER TABLE recipe ADD item_names TEXT;
+timestamp: 2015-03-11T17:57:04.420000
+ALTER TABLE recipe ADD item_amount TEXT;
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!
+success!

@@ -10,4 +10,4 @@ Clone this repository as one of your web2py applications.
 
 ### For more information ###
 
-Talk to luca@ucsc.edu
+Talk to bcooney@ucsc.edu

@@ -49,7 +49,7 @@ def index():
             return dict(display_title=display_title,content=content,editing=editing,form=form)
         else: # page_id is None
             if title == 'main page':
-                content = represent_wiki("Welcome to the main page! Search for topics here.")
+                content = represent_wiki("Welcome to the main page! Search for games here.")
                 form = SQLFORM.factory(Field('search'))
                 if form.process().accepted:
                     redirect(URL('default','index',args=[form.vars.search]))
@@ -99,54 +99,6 @@ def revert():
                        comments='Revert to '+r.creation_date.strftime("%Y-%m-%d %H:%M:%S")+' UTC')
     redirect(URL('default','index'))
     
-
-def test(): # Depreciated: Originally used as a test page.
-    """This controller is here for testing purposes only.
-    Feel free to leave it in, but don't make it part of your wiki.
-    """
-    title = "This is the wiki's test page"
-    form = None
-    content = None
-    
-    # Let's uppernice the title.  The last 'title()' below
-    # is actually a Python function, if you are wondering.
-    display_title = title.title()
-    
-    # Gets the body s of the page.
-    r = db.testpage(1)
-    s = r.body if r is not None else ''
-    # Are we editing?
-    editing = request.vars.edit == 'true'
-    # This is how you can use logging, very useful.
-    logger.info("This is a request for page %r, with editing %r" %
-                 (title, editing))
-    if editing:
-        # We are editing.  Gets the body s of the page.
-        # Creates a form to edit the content s, with s as default.
-        form = SQLFORM.factory(Field('body', 'text',
-                                     label='Content',
-                                     default=s
-                                     ))
-        # You can easily add extra buttons to forms.
-        form.add_button('Cancel', URL('default', 'test'))
-        # Processes the form.
-        if form.process().accepted:
-            # Writes the new content.
-            if r is None:
-                # First time: we need to insert it.
-                db.testpage.insert(id=1, body=form.vars.body)
-            else:
-                # We update it.
-                r.update_record(body=form.vars.body)
-            # We redirect here, so we get this page with GET rather than POST,
-            # and we go out of edit mode.
-            redirect(URL('default', 'test'))
-        content = form
-    else:
-        # We are just displaying the page
-        content = s
-    return dict(display_title=display_title, content=content, editing=editing)
-
 
 def user():
     """
