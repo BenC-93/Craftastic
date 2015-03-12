@@ -16,24 +16,29 @@ db.define_table('pagetable',
                 Field('title'),
                 )
 
-# This table holds the names of different games that have recipe entries.
+# This table holds information about games that have recipe entries.
 db.define_table('gametable',
-                Field('title'),
+                Field('title'),          # name of game
+                Field('body','text'),    # description of game
+                Field('is_pc','boolean'),# is game on personal computer?
+                Field('is_xb','boolean'),# is game on xbox?
+                Field('is_ps','boolean'),# is game on playstation?
                 )
 
 # This table holds information about specific item recipes.
 db.define_table('recipe',
-                Field('game_id'),
-                Field('game_ver'),
-                Field('author',default=get_first_name()),
-                Field('user_id',db.auth_user,default=auth.user_id),
-                Field('body','text'),
-                Field('item_names','list:string'),
-                Field('item_amount','list:integer'),
-                Field('craft_time','double'),
-                Field('picture','upload'),
+                Field('game_id'),                                  # index in 'gametable' of game that this recipe belongs to
+                Field('game_ver'),                                 # version of game where recipe works (numerical)
+                Field('author',default=get_first_name()),          # *used to track how many posts a user makes
+                Field('user_id',db.auth_user,default=auth.user_id),# original author's user_id
+                Field('body','text'),                              # description of the item created from this recipe
+                Field('item_names','list:string'),                 # list of item names used in crafting recipe
+                Field('item_amount','list:integer'),               # list of item amounts used in crafting recipe
+                Field('craft_time','double'),                      # amount of time used in crafting recipe, if game uses time
+                Field('picture','upload'),                         # picture of the item crafted from recipe
                 )
 
+### REMOVE THIS AT SOME POINT!!! ###
 db.define_table('revision',
                 Field('page_id'),
                 Field('author',default=get_first_name()),
@@ -62,17 +67,23 @@ def represent_wiki(s):
     return MARKMIN(create_wiki_links(s))
 
 def represent_content(v, r):
-    """In case you need it: this is similar to represent_wiki, 
+    """In case you need it: this is similar to represent_wiki,
     but can be used in db.table.field.represent = represent_content"""
     return represent_wiki(v)
 
-# We associate the wiki representation with the body of a revision.
+### REMOVE THIS AT SOME POINT!!! ###
 db.revision.body.represent = represent_content
 db.revision.id.readable = False
 db.revision.author.writeable = False
 db.revision.user_id.readable = False
 db.revision.user_id.writeable = False
 db.revision.creation_date.writeable = False
+
+# 'gametable' table settings
+db.gametable.body.label = 'Description'
+db.gametable.is_pc.default = False
+db.gametable.is_xb.default = False
+db.gametable.is_ps.default = False
 
 # 'recipe' table settings
 db.recipe.author.writeable = False

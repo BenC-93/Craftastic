@@ -60,6 +60,9 @@ def index():
                     redirect(URL('default','index',args=[title],vars=dict(edit='y')))
                 return dict(display_title=display_title,content=content,form=form)
 
+def games():
+    return
+
 def recipes():
     return
 
