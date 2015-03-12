@@ -5,8 +5,7 @@ import logging
 
 def index():
     """This is the main page of the wiki. You will find the title of the requested page in request.args(0).
-    If this is None, then just serve the latest revision of something titled "Main page" or something 
-    like that."""
+    If this is None, then serve "Main page"."""
     title = request.args(0) or 'main page'
     display_title = title.title()
     
