@@ -4,7 +4,7 @@
 import logging
 
 def index():
-    """This is the main page of the wiki. You will find the title of the requested page in request.args(0).
+    """This is the main page of the wiki. The title of the requested page is in request.args(0).
     If this is None, then serve "Main page"."""
     title = request.args(0) or 'main page'
     display_title = title.title()
@@ -50,7 +50,7 @@ def index():
                 content = represent_wiki("Welcome to the main page! Search for games here.")
                 form = SQLFORM.factory(Field('search'))
                 if form.process().accepted:
-                    redirect(URL('default','index',args=[form.vars.search]))
+                    redirect(URL('default','games',args=[form.vars.search]))
                 return dict(display_title=display_title,content=content,form=form)
             else: # title is not 'main page'
                 content = represent_wiki("This topic does not exist. Would you like to create it?")
@@ -60,10 +60,37 @@ def index():
                 return dict(display_title=display_title,content=content,form=form)
 
 def games():
-    return
+    title = request.args(0)
+    display_title = title.title()
+    editing = True if request.vars.edit=='y' else False
+    game = db(db.gametable.title == title).select().first()
+    game_id = game.id if game is not None else None
+    
+    if editing:
+        game_id = None
+    else:
+        if game_id is not None:
+            r = db(db.recipe.game_id == game_id).select(orderby=~db.recipe.game_ver).first()
+            s = r.body if r is not None else ''
+            content = represent_wiki(s)
+            form = FORM.confirm('Edit',{'History':URL('default','history',args=[title]),'Main Page':URL('default','index')})
+            if form.accepted:
+                if auth.user:
+                    redirect(URL('default','games',args=[title],vars=dict(edit='y')))
+                else:
+                    session.flash = T("Please sign in to make entries.")
+                    redirect(URL('default','games',args=[title]))
+            return dict(display_title=display_title,content=content,editing=editing,form=form)
+    
+    return dict(display_title=display_title)
 
 def recipes():
-    return
+    title = request.args(0)
+    display_title = title.title()
+    
+    game = db(db.gametable.title == title).select().first()
+    game_id = game.id if game is not None else None
+    return dict(display_title=display_title)
 
 def history():
     """This page lists all revisions of a given topic, and allows the user to revert a topic
