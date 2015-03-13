@@ -168,6 +168,7 @@ def games2():
     else: # not editing
         if game_id is not None:
             content = SQLFORM(db.gametable,record=db.gametable(game_id),readonly=True)
+            # add SQLFORM.grid for recipetable
             form = FORM.confirm('Edit',{'Games List':URL('default','index2')})
             if form.accepted:
                 if auth.user:
@@ -183,8 +184,8 @@ def games2():
                 if form.process().accepted:
                     redirect(URL('default','recipes2',args=[form.vars.search]))
                 return dict(display_title=display_title,content=content,form=form)
-            else: # title is not 'main page'
-                content = represent_wiki("This topic does not exist. Would you like to create it?")
+            else: # title is not 'unknown game'
+                content = represent_wiki("This game does is not listed. Would you like to create it?")
                 form = FORM.confirm('Yes',{'No':URL('default','index')})
                 if form.accepted:
                     redirect(URL('default','games2',args=[title],vars=dict(edit='y')))
