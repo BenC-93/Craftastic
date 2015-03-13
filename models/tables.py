@@ -29,6 +29,7 @@ db.define_table('gametable',
 
 # This table holds information about specific item recipes.
 db.define_table('recipe',
+                Field('title'),                                    # name of recipe item
                 Field('game_id'),                                  # index in 'gametable' of game that this recipe belongs to
                 Field('game_ver'),                                 # version of game where recipe works (numerical)
                 Field('author',default=get_first_name()),          # *used to track how many posts a user makes
@@ -85,16 +86,22 @@ db.revision.creation_date.writeable = False
 db.gametable.id.readable = False
 db.gametable.id.writable = False
 db.gametable.title.requires = IS_NOT_IN_DB(db,'gametable.title')
+db.gametable.title.writable = False
 db.gametable.body.label = 'Description'
 db.gametable.amount.readable = False
 db.gametable.amount.writable = False
 db.gametable.amount.label = 'Recipes'
 db.gametable.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(400,400)))
 db.gametable.is_pc.default = False
+db.gametable.is_pc.label = 'PC'
 db.gametable.is_xb.default = False
+db.gametable.is_xb.label = 'xbox'
 db.gametable.is_ps.default = False
+db.gametable.is_ps.label = 'PlayStation'
 
 # 'recipe' table settings
+db.recipe.game_id.readable = False
+db.recipe.game_id.writable = False
 db.recipe.author.writeable = False
 db.recipe.user_id.readable = False
 db.recipe.user_id.writeable = False
