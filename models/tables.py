@@ -4,7 +4,7 @@ import re
 import unittest
 
 def get_first_name():
-    name = 'Nobody'
+    name = 'Anon User'
     if auth.user:
         name = auth.user.first_name
     return name
@@ -18,11 +18,13 @@ db.define_table('pagetable',
 
 # This table holds information about games that have recipe entries.
 db.define_table('gametable',
-                Field('title'),          # name of game
-                Field('body','text'),    # description of game
-                Field('is_pc','boolean'),# is game on personal computer?
-                Field('is_xb','boolean'),# is game on xbox?
-                Field('is_ps','boolean'),# is game on playstation?
+                Field('title'),           # name of game
+                Field('body','text'),     # description of game
+                Field('amount','integer'),# number of recipes entered
+                Field('picture','upload'),# game box art
+                Field('is_pc','boolean'), # is game on personal computer?
+                Field('is_xb','boolean'), # is game on xbox?
+                Field('is_ps','boolean'), # is game on playstation?
                 )
 
 # This table holds information about specific item recipes.
@@ -80,7 +82,14 @@ db.revision.user_id.writeable = False
 db.revision.creation_date.writeable = False
 
 # 'gametable' table settings
+db.gametable.id.readable = False
+db.gametable.id.writable = False
+db.gametable.title.requires = IS_NOT_IN_DB(db,'gametable.title')
 db.gametable.body.label = 'Description'
+db.gametable.amount.readable = False
+db.gametable.amount.writable = False
+db.gametable.amount.label = 'Recipes'
+db.gametable.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(400,400)))
 db.gametable.is_pc.default = False
 db.gametable.is_xb.default = False
 db.gametable.is_ps.default = False
@@ -92,3 +101,4 @@ db.recipe.user_id.writeable = False
 db.recipe.body.represent = represent_content
 db.recipe.body.label = 'Description'
 db.recipe.craft_time.default = 0
+db.recipe.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(200,200)))

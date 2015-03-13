@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# this file is released under public domain and you can use without limitations
 
 import logging
 
@@ -59,30 +58,74 @@ def index():
                     redirect(URL('default','index',args=[title],vars=dict(edit='y')))
                 return dict(display_title=display_title,content=content,form=form)
 
+# Searchbar for finding games, grid for known games
+def index2():
+    def generate_view_button(row):
+        g = db(db.gametable.id == row.id).select().first()
+        b = A('View',_class='btn',_href=URL('default','games',args=[g.title]))
+        return b
+    
+    form = SQLFORM.factory(Field('search'))
+    if form.process().accepted:
+        redirect(URL('default','games',args=[form.vars.search]))
+    
+    links = [dict(header='',body=generate_view_button)]
+    grid = SQLFORM.grid(db.gametable,
+                        fields=[db.gametable.title,
+                                db.gametable.is_pc,
+                                db.gametable.is_xb,
+                                db.gametable.is_ps,
+                                db.gametable.amount,
+                                ],
+                        create=False,
+                        details=False,
+                        editable=False,
+                        deletable=False,
+                        user_signature=False,
+                        csv=False,
+                        searchable=False,
+                        #onvalidation=check_search,
+                        links=links,
+                        )
+    return dict(form=form,grid=grid)
+
+# Individual game information (editable), grid of recipes for that game
 def games():
-    title = request.args(0)
+    title = request.args(0) or 'Unknown Game'
     display_title = title.title()
     editing = True if request.vars.edit=='y' else False
     game = db(db.gametable.title == title).select().first()
     game_id = game.id if game is not None else None
     
-    if editing:
-        game_id = None
+    if ((game_id is None) or (title is 'Unknown Game')):
+        content = represent_wiki("No game is listed. Would you like to add one?")
+        form = FORM.confirm('Yes',{'No':URL('default','index2')})
+        if form.accepted:
+            if title is 'Unknown Game':
+                form = SQLFORM.factory(Field('name'))
+                if form.process().accepted:
+                    db.gametable.insert(title=form.vars.name)
+                    redirect(URL('default','games',args=[form.vars.name],vars=dict(edit='y')))
+            else:
+                db.gametable.insert(title=title)
+                redirect(URL('default','games',args=[title],vars=dict(edit='y')))
+        return dict(display_title=display_title,content=content,form=form,grid='')
     else:
-        if game_id is not None:
+        if editing:
+            form = SQLFORM(db.gametable,record=db.gametable(game_id))
+            if form.process().accepted:
+                session.flash = T('Edited')
+                redirect(URL('default','games',args=[title]))
+            return dict(display_title=display_title,content='',form=form,grid='')
+        else:
+            form = SQLFORM(db.gametable,record=db.gametable(game_id),readonly=True)
             r = db(db.recipe.game_id == game_id).select(orderby=~db.recipe.game_ver).first()
-            s = r.body if r is not None else ''
-            content = represent_wiki(s)
-            form = FORM.confirm('Edit',{'History':URL('default','history',args=[title]),'Main Page':URL('default','index')})
-            if form.accepted:
-                if auth.user:
-                    redirect(URL('default','games',args=[title],vars=dict(edit='y')))
-                else:
-                    session.flash = T("Please sign in to make entries.")
-                    redirect(URL('default','games',args=[title]))
-            return dict(display_title=display_title,content=content,editing=editing,form=form)
-    
-    return dict(display_title=display_title)
+            #grid = SQLFORM.grid(r,
+            #                    fields=[db.recipe.author,
+            #                            db.recipe.game_ver,
+            #                            ],
+            #                   )
+            return dict(display_title=display_title,content='',form=form,grid='')
 
 def recipes():
     title = request.args(0)
