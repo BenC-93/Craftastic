@@ -27,12 +27,13 @@ db.define_table('gametable',
                 Field('is_ps','boolean'), # is game on playstation?
                 )
 
+# This table holds information about specific item recipes.
 db.define_table('recipetable',
                 Field('title'),
                 Field('game_id'),
                 )
 
-# This table holds information about specific item recipes.
+# This table holds revisions for item recipes.
 db.define_table('recipe',
                 #Field('title'),                                    # name of recipe item
                 #Field('game_id'),                                  # index in 'gametable' of game that this recipe belongs to
@@ -40,6 +41,7 @@ db.define_table('recipe',
                 Field('game_ver'),                                 # version of game where recipe works (numerical)
                 Field('author',default=get_first_name()),          # *used to track how many posts a user makes
                 Field('user_id',db.auth_user,default=auth.user_id),# original author's user_id
+                Field('creation_date','datetime',default=datetime.utcnow()),
                 Field('body','text'),                              # description of the item created from this recipe
                 Field('item_names','list:string'),                 # list of item names used in crafting recipe
                 Field('item_amount','list:integer'),               # list of item amounts used in crafting recipe
@@ -114,6 +116,7 @@ db.recipe.id.writable = False
 db.recipe.author.writeable = False
 db.recipe.user_id.readable = False
 db.recipe.user_id.writable = False
+db.recipe.creation_date.writable = False
 db.recipe.body.represent = represent_content
 db.recipe.body.label = 'Description'
 db.recipe.craft_time.default = 0

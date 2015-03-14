@@ -3,69 +3,12 @@
 import logging
 
 def index():
-    """This is the main page of the wiki. The title of the requested page is in request.args(0).
-    If this is None, then serve "Main page"."""
-    title = request.args(0) or 'main page'
-    display_title = title.title()
-    
-    editing = True if request.vars.edit=='y' else False
-
-    page = db(db.pagetable.title == title).select().first()
-    page_id = page.id if page is not None else None
-    
-    if editing:
-        if page_id is not None:
-            r = db(db.revision.page_id == page_id).select(orderby=~db.revision.creation_date).first()
-        else:
-            r = None
-        s = r.body if r is not None else ''
-        form = SQLFORM.factory(Field('body','text',label='Content',default=s),
-                               Field('comments'))
-        form.add_button('Cancel',URL('default','index'))
-        if form.process().accepted:
-            if r is None:
-                page_id = db.pagetable.insert(title=title)
-                db.revision.insert(page_id=int(page_id),body=form.vars.body,comments=form.vars.comments)
-                redirect(URL('default','index',args=[title]))
-            else:
-                db.revision.insert(page_id=page_id,body=form.vars.body,comments=form.vars.comments)
-            redirect(URL('default','index',args=[title]))
-        return dict(display_title=display_title,content=form,editing=editing,form='')
-    else: # not editing
-        if page_id is not None:
-            r = db(db.revision.page_id == page_id).select(orderby=~db.revision.creation_date).first()
-            s = r.body if r is not None else ''
-            content = represent_wiki(s)
-            form = FORM.confirm('Edit',{'History':URL('default','history',args=[title]),'Main Page':URL('default','index')})
-            if form.accepted:
-                if auth.user:
-                    redirect(URL('default','index',args=[title],vars=dict(edit='y')))
-                else:
-                    session.flash = T("Please sign in to edit.")
-                    redirect(URL('default','index',args=[title]))
-            return dict(display_title=display_title,content=content,editing=editing,form=form)
-        else: # page_id is None
-            if title == 'main page':
-                content = represent_wiki("Welcome to the main page! Search for games here.")
-                form = SQLFORM.factory(Field('search'))
-                if form.process().accepted:
-                    redirect(URL('default','games',args=[form.vars.search]))
-                return dict(display_title=display_title,content=content,form=form)
-            else: # title is not 'main page'
-                content = represent_wiki("This topic does not exist. Would you like to create it?")
-                form = FORM.confirm('Yes',{'No':URL('default','index')})
-                if form.accepted:
-                    redirect(URL('default','index',args=[title],vars=dict(edit='y')))
-                return dict(display_title=display_title,content=content,form=form)
-
-# Searchbar for finding games, grid for known games
-def index2():
     def generate_view_button(row):
         g = db(db.gametable.id == row.id).select().first()
         b = A('View',_class='btn',_href=URL('default','games2',args=[g.title]))
         return b
     
-    form = SQLFORM.factory(Field('search'))
+    form = SQLFORM.factory(Field('search',label='Search Games'))
     if form.process().accepted:
         redirect(URL('default','games2',args=[form.vars.search.lower()]))
     
@@ -131,7 +74,7 @@ def games():
                 session.flash = T('Game Page Created')
                 redirect(URL('default','recipes',args=[search_form.vars.search.lower()],vars=dict(game_name=game_id)))
             try:
-                r = db(db.recipe.game_id == game_id).select(orderby=~db.recipe.game_ver).first()
+                r = db(db.recipe.game_id == game_id).select(orderby=~db.recipe.creation_date).first()
                 links = [dict(header='',body=generate_view_button)]
                 grid = SQLFORM.grid(r,
                                     fields=[db.recipe.author,
@@ -164,83 +107,108 @@ def games2():
         form.add_button('Cancel',URL('default','games2',args=[title]))
         if form.process().accepted:
             redirect(URL('default','games2',args=[title]))
-        return dict(display_title=display_title,content='',form=form)
+        return dict(display_title=display_title,content='',form=form,sform='',grid='')
     else: # not editing
         if game_id is not None:
             content = SQLFORM(db.gametable,record=db.gametable(game_id),readonly=True)
-            # add SQLFORM.grid for recipetable
-            form = FORM.confirm('Edit',{'Games List':URL('default','index2')})
+            try:
+                rt = db(db.recipetable.game_id == game_id).select().first()
+                q = (db.recipe.recip_id == rt.id)
+                grid = SQLFORM.grid(db.recipe,
+                                    fields=[#db.recipetable.title,
+                                            db.recipe.author,
+                                            ],
+                                    )
+            except:
+                grid = 'There are no crafting recipes yet. Create some!'
+            form = FORM.confirm('Edit',{'Games List':URL('default','index')})
             if form.accepted:
                 if auth.user:
                     redirect(URL('default','games2',args=[title],vars=dict(edit='y')))
                 else:
                     session.flash = T("Please sign in to edit.")
                     redirect(URL('default','games2',args=[title]))
-            return dict(display_title=display_title,content=content,form=form)
+            sform = SQLFORM.factory(Field('search',label='Search Recipes'))
+            if sform.process().accepted:
+                redirect(URL('default','recipes2',args=[sform.vars.search.lower()],vars=dict(g_id=game_id)))
+            return dict(display_title=display_title,content=content,form=form,sform=sform,grid=grid)
         else: # game_id is None
             if title == 'unknown game':
-                content = represent_wiki("Welcome to the main page! Search for games here.")
+                content = represent_wiki("We couldn't find that game listing. Search for one here.")
                 form = SQLFORM.factory(Field('search'))
+                form.add_button('Games List',URL('default','index'))
                 if form.process().accepted:
-                    redirect(URL('default','recipes2',args=[form.vars.search]))
-                return dict(display_title=display_title,content=content,form=form)
+                    redirect(URL('default','games2',args=[form.vars.search]))
+                return dict(display_title=display_title,content=content,form=form,sform='',grid='')
             else: # title is not 'unknown game'
-                content = represent_wiki("This game does is not listed. Would you like to create it?")
+                content = represent_wiki("This game is not listed. Would you like to create it?")
                 form = FORM.confirm('Yes',{'No':URL('default','index')})
                 if form.accepted:
                     redirect(URL('default','games2',args=[title],vars=dict(edit='y')))
-                return dict(display_title=display_title,content=content,form=form)
+                return dict(display_title=display_title,content=content,form=form,sform='',grid='')
 
 def recipes2():
     title = request.args(0) or 'unknown recipe'
     display_title = title.title()
     editing = True if request.vars.edit=='y' else False
-    recip = db(db.recipetable.title == title).select().first()
-    recip_id = recip.id if page is not None else None
-    
+    g_id = request.vars.g_id if request.vars.g_id is not None else None
+    recip = db((db.recipetable.game_id == g_id) & (db.recipetable.title == title)).select().first()
+    recip_id = recip.id if recip is not None else None
     if editing:
-        if recip_id is not None:
-            r = db(db.recipe.recip_id == recip_id).select(orderby=~db.recipe.game_ver).first()
-        else:
-            r = None
-        s = r.body if r is not None else ''
-        form = SQLFORM.factory(Field('body','text',label='Content',default=s),
-                               Field('game_ver',label='Game Version'))
+        r = db(db.recipe.recip_id == recip_id).select(orderby=~db.recipe.creation_date).first() if recip_id is not None else None
+        # get the recipe fields
+        gv = r.game_ver if r is not None else ''
+        de = r.body if r is not None else ''
+        i_n = r.item_names if r is not None else None
+        i_a = r.item_amount if r is not None else None
+        ct = r.craft_time if r is not None else 0
+        pic = r.picture if r is not None else None
+        form = SQLFORM.factory(Field('game_ver',label='Game Version',default=gv),
+                               Field('body','text',label='Description',default=de),
+                               Field('item_names','list:string',label='Item Names',default=i_n),
+                               Field('item_amount','list:integer',label='Item Amounts',default=i_a),
+                               Field('craft_time','double',default=ct),
+                               Field('picture','upload',default=pic),
+                               )
         form.add_button('Cancel',URL('default','games2'))
         if form.process().accepted:
             if r is None:
-                recip_id = db.recipetable.insert(title=title)
-                db.recipe.insert(recip_id=int(recip_id),body=form.vars.body,game_ver=form.vars.game_ver)
-                redirect(URL('default','games2',args=[title]))
-            else:
-                db.recipe.insert(recip_id=recip_id,body=form.vars.body,game_ver=form.vars.game_ver)
-            redirect(URL('default','games2',args=[title]))
+                recip_id = db.recipetable.insert(title=title,game_id=g_id)
+            db.recipe.insert(recip_id=int(recip_id),
+                             game_ver=form.vars.game_ver,
+                             body=form.vars.body,
+                             item_names=form.vars.item_names,
+                             item_amount=form.vars.item_amount,
+                             craft_time=form.vars.craft_time,
+                             picture=form.vars.picture,
+                             )
+            redirect(URL('default','recipes2',args=[title],vars=dict(g_id=g_id)))
         return dict(display_title=display_title,content=form,form='')
     else: # not editing
         if recip_id is not None:
             r = db(db.recipe.recip_id == recip_id).select(orderby=~db.recipe.game_ver).first()
             s = r.body if r is not None else ''
             content = represent_wiki(s)
-            form = FORM.confirm('Edit',{'History':URL('default','history2',args=[title]),'Games List':URL('default','games2')})
+            form = FORM.confirm('Edit',{'History':URL('default','history2',args=[title]),'Games List':URL('default','index')})
             if form.accepted:
                 if auth.user:
-                    redirect(URL('default','games2',args=[title],vars=dict(edit='y')))
+                    redirect(URL('default','recipes2',args=[title],vars=dict(g_id=g_id,edit='y')))
                 else:
                     session.flash = T("Please sign in to edit.")
-                    redirect(URL('default','games2',args=[title]))
+                    redirect(URL('default','recipes2',args=[title],vars=dict(g_id=g_id)))
             return dict(display_title=display_title,content=content,form=form)
         else: # page_id is None
             if title == 'unknown recipe':
                 content = represent_wiki("This is an unknown recipe! Create it.")
-                form = SQLFORM.factory(Field('search'))
+                form = SQLFORM.factory(Field('search',label='Search Recipes'))
                 if form.process().accepted:
-                    redirect(URL('default','recipes2',args=[form.vars.search]))
+                    redirect(URL('default','recipes2',args=[form.vars.search],vars=dict(g_id=g_id)))
                 return dict(display_title=display_title,content=content,form=form)
             else: # title is not 'main page'
-                content = represent_wiki("This topic does not exist. Would you like to create it?")
+                content = represent_wiki("This recipe does not exist. Would you like to create it?")
                 form = FORM.confirm('Yes',{'No':URL('default','games2')})
                 if form.accepted:
-                    redirect(URL('default','games2',args=[title],vars=dict(edit='y')))
+                    redirect(URL('default','recipes2',args=[title],vars=dict(g_id=g_id,edit='y')))
                 return dict(display_title=display_title,content=content,form=form)
     
 def recipes():
