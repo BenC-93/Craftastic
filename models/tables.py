@@ -29,15 +29,13 @@ db.define_table('gametable',
 
 # This table holds information about specific item recipes.
 db.define_table('recipetable',
-                Field('title'),
-                Field('game_id'),
+                Field('title'),  # name of recipe
+                Field('game_id'),# index in gametable to this recipe
                 )
 
 # This table holds revisions for item recipes.
 db.define_table('recipe',
-                #Field('title'),                                    # name of recipe item
-                #Field('game_id'),                                  # index in 'gametable' of game that this recipe belongs to
-                Field('recip_id'),
+                Field('recip_id'),                                 # index in recipetable to this recipe revision
                 Field('game_ver'),                                 # version of game where recipe works (numerical)
                 Field('author',default=get_first_name()),          # *used to track how many posts a user makes
                 Field('user_id',db.auth_user,default=auth.user_id),# original author's user_id
@@ -64,9 +62,7 @@ def create_wiki_links(s):
     wikitext s with links to default/page/polar%20bear, so the name of the 
     page will be urlencoded and passed as argument 1."""
     def makelink(match):
-        # The tile is what the user puts in
         title = match.group(2).strip()
-        # The page, instead, is a normalized lowercase version.
         page = title.lower()
         return '[[%s %s]]' % (title, URL('default', 'index', args=[page]))
     return re.sub(RE_LINKS, makelink, s)
@@ -110,12 +106,12 @@ db.gametable.is_ps.label = 'PlayStation'
 # 'recipe' table settings
 db.recipe.id.readable = False
 db.recipe.id.writable = False
-#db.recipe.title.writable = False
-#db.recipe.game_id.readable = False
-#db.recipe.game_id.writable = False
+db.recipe.recip_id.readable = False
+db.recipe.recip_id.writable = False
 db.recipe.author.writeable = False
 db.recipe.user_id.readable = False
 db.recipe.user_id.writable = False
+db.recipe.creation_date.readable = False
 db.recipe.creation_date.writable = False
 db.recipe.body.represent = represent_content
 db.recipe.body.label = 'Description'

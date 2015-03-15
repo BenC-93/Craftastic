@@ -1,11 +1,12 @@
 {{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
 {{extend 'layout.html'}}
 
-<h1>{{=display_title}}</h1>
-
-{{=form}}
-
+<h1>{{=game_name.title()}}</h1>
 <p>
-    {{=A('Games list',_class='btn',_href=URL('default','index2'))}}
-    {{=A('Recipe list',_class='btn',_href=URL('default','games',args=[display_title]))}}
+    {{=A('Games list',_class='btn',_href=URL('default','index'))}}
+    {{=A('Recipe list',_class='btn',_href=URL('default','games',args=[game_name]))}}
 </p>
+<h3>{{=display_title}}</h3>
+
+{{=content}}
+{{=form}}
