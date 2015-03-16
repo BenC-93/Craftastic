@@ -65,15 +65,12 @@ def games():
     else: # not editing
         if game_id is not None:
             content = SQLFORM(db.gametable,record=db.gametable(game_id),readonly=True)
-            #try:
             rt = (db.recipetable.game_id == game_id)
-                #q = (db.recipe.recip_id == rt.id)
             links = [dict(header='Description',body=generate_item_desc),
                      dict(header='Game Version',body=generate_item_game_ver),
                      dict(header='',body=generate_view_button)]
             grid = SQLFORM.grid(rt,
                                 fields=[db.recipetable.title,
-                                        #db.recipe.author,
                                         ],
                                 create=False,
                                 details=False,
@@ -84,8 +81,6 @@ def games():
                                 searchable=False,
                                 links=links,
                                 )
-            #except:
-                #grid = 'There are no crafting recipes yet. Create some!'
             form = FORM.confirm('Edit',{'Games List':URL('default','index')})
             if form.accepted:
                 if auth.user:
@@ -122,7 +117,6 @@ def recipes():
     recip_id = recip.id if recip is not None else None
     if editing:
         r = db(db.recipe.recip_id == recip_id).select(orderby=~db.recipe.creation_date).first() if recip_id is not None else None
-        # get the recipe fields
         gv = r.game_ver if r is not None else ''
         de = r.body if r is not None else ''
         i_n = r.item_names if r is not None else None
