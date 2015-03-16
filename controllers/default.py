@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import logging
 
 def index():
@@ -16,6 +15,7 @@ def index():
     grid = SQLFORM.grid(db.gametable,
                         fields=[db.gametable.title,
                                 db.gametable.is_pc,
+                                db.gametable.is_mc,
                                 db.gametable.is_xb,
                                 db.gametable.is_ps,
                                 db.gametable.amount,
@@ -27,7 +27,6 @@ def index():
                         user_signature=False,
                         csv=False,
                         searchable=False,
-                        #onvalidation=check_search,
                         links=links,
                         )
     return dict(form=form,grid=grid)
@@ -52,11 +51,11 @@ def games():
         if game_id is not None:
             content = SQLFORM(db.gametable,record=db.gametable(game_id),readonly=True)
             try:
-                rt = db(db.recipetable.game_id == game_id).select().first()
-                q = (db.recipe.recip_id == rt.id)
-                grid = SQLFORM.grid(db.recipe,
-                                    fields=[#db.recipetable.title,
-                                            db.recipe.author,
+                rt = (db.recipetable.game_id == game_id)
+                #q = (db.recipe.recip_id == rt.id)
+                grid = SQLFORM.grid(rt,
+                                    fields=[db.recipetable.title,
+                                            #db.recipe.author,
                                             ],
                                     )
             except:
@@ -78,7 +77,7 @@ def games():
                 form = SQLFORM.factory(Field('search'))
                 form.add_button('Games List',URL('default','index'))
                 if form.process().accepted:
-                    redirect(URL('default','games',args=[form.vars.search]))
+                    redirect(URL('default','games',args=[form.vars.search.lower()]))
                 return dict(display_title=display_title,content=content,form=form,sform='',grid='')
             else: # title is not 'unknown game'
                 content = represent_wiki("This game is not listed. Would you like to create it?")
@@ -103,13 +102,15 @@ def recipes():
         i_n = r.item_names if r is not None else None
         i_a = r.item_amount if r is not None else None
         ct = r.craft_time if r is not None else 0
+        ra = r.result_amount if r is not None else 1
         pic = r.picture if r is not None else None
         form = SQLFORM.factory(Field('game_ver',label='Game Version',default=gv),
                                Field('body','text',label='Description',default=de),
-                               Field('item_names','list:string',label='Item Names',default=i_n),
-                               Field('item_amount','list:integer',label='Item Amounts',default=i_a),
+                               Field('item_names','list:string',default=i_n),
+                               Field('item_amount','list:integer',default=i_a),
                                Field('craft_time','double',default=ct),
-                               Field('picture','upload',default=pic),
+                               Field('result_amount','double',default=ra),
+                               Field('picture','upload'),
                                )
         form.add_button('Cancel',URL('default','games',args=[game_name]))
         if form.process().accepted:
@@ -121,6 +122,7 @@ def recipes():
                              item_names=form.vars.item_names,
                              item_amount=form.vars.item_amount,
                              craft_time=form.vars.craft_time,
+                             result_amount=form.vars.result_amount,
                              picture=form.vars.picture,
                              )
             redirect(URL('default','recipes',args=[title],vars=dict(g_id=g_id)))
@@ -128,9 +130,7 @@ def recipes():
     else: # not editing
         if recip_id is not None:
             r = db(db.recipe.recip_id == recip_id).select(orderby=~db.recipe.creation_date).first()
-            #s = r.body if r is not None else ''
-            #content = represent_wiki(s)
-            content = SQLFORM(db.recipe,record=db.recipe(recip_id),readonly=True)
+            content = SQLFORM(db.recipe,record=db.recipe(r.id),readonly=True)
             form = FORM.confirm('Edit',{'History':URL('default','history',args=[title],vars=dict(recip_id=recip_id,g_id=g_id))})
             if form.accepted:
                 if auth.user:
@@ -144,7 +144,7 @@ def recipes():
                 content = represent_wiki("This is an unknown recipe! Create it.")
                 form = SQLFORM.factory(Field('search',label='Search Recipes'))
                 if form.process().accepted:
-                    redirect(URL('default','recipes',args=[form.vars.search],vars=dict(g_id=g_id)))
+                    redirect(URL('default','recipes',args=[form.vars.search.lower()],vars=dict(g_id=g_id)))
                 return dict(game_name=game_name,display_title=display_title,content=content,form=form)
             else: # title is not 'main page'
                 content = represent_wiki("This recipe does not exist. Would you like to create it?")
@@ -175,6 +175,7 @@ def history():
                                 db.recipe.item_names,
                                 db.recipe.item_amount,
                                 db.recipe.craft_time,
+                                db.recipe.result_amount,
                                 ],
                         create=False,
                         details=False,
@@ -184,8 +185,8 @@ def history():
                         csv=False,
                         searchable=False,
                         orderby=~db.recipe.creation_date,
-                        links=links)
-    
+                        links=links,
+                        )
     return dict(game_name=game_name,g_id=g_id,display_title=display_title,form=form)
     
 def revert():
@@ -197,11 +198,11 @@ def revert():
                      item_names=r.item_names,
                      item_amount=r.item_amount,
                      craft_time=r.craft_time,
+                     result_amount=r.result_amount,
                      picture=r.picture,
                      )
-    redirect(URL('default','index'))
+    redirect(URL('default','games',args=[db.gametable[db.recipetable[r.recip_id].game_id].title]))
     
-
 def user():
     """
     exposes:

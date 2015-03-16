@@ -12,10 +12,6 @@ def get_first_name():
 # Format for wiki links.
 RE_LINKS = re.compile('(<<)(.*?)(>>)')
 
-db.define_table('pagetable',
-                Field('title'),
-                )
-
 # This table holds information about games that have recipe entries.
 db.define_table('gametable',
                 Field('title'),           # name of game
@@ -23,6 +19,7 @@ db.define_table('gametable',
                 Field('amount','integer'),# number of recipes entered
                 Field('picture','upload'),# game box art
                 Field('is_pc','boolean'), # is game on personal computer?
+                Field('is_mc','boolean'), # is game on mac?
                 Field('is_xb','boolean'), # is game on xbox?
                 Field('is_ps','boolean'), # is game on playstation?
                 )
@@ -44,17 +41,8 @@ db.define_table('recipe',
                 Field('item_names','list:string'),                 # list of item names used in crafting recipe
                 Field('item_amount','list:integer'),               # list of item amounts used in crafting recipe
                 Field('craft_time','double'),                      # amount of time used in crafting recipe, if game uses time
+                Field('result_amount','double'),                   # amount of the item that the recipe yields
                 Field('picture','upload'),                         # picture of the item crafted from recipe
-                )
-
-### REMOVE THIS AT SOME POINT!!! ###
-db.define_table('revision',
-                Field('page_id'),
-                Field('author',default=get_first_name()),
-                Field('user_id',db.auth_user,default=auth.user_id),
-                Field('creation_date','datetime',default=datetime.utcnow()),
-                Field('body','text'),
-                Field('comments'), # 'comment' is a reserved keyword
                 )
 
 def create_wiki_links(s):
@@ -78,14 +66,6 @@ def represent_content(v, r):
     but can be used in db.table.field.represent = represent_content"""
     return represent_wiki(v)
 
-### REMOVE THIS AT SOME POINT!!! ###
-db.revision.body.represent = represent_content
-db.revision.id.readable = False
-db.revision.author.writeable = False
-db.revision.user_id.readable = False
-db.revision.user_id.writeable = False
-db.revision.creation_date.writeable = False
-
 # 'gametable' table settings
 db.gametable.id.readable = False
 db.gametable.id.writable = False
@@ -98,6 +78,8 @@ db.gametable.amount.label = 'Recipes'
 db.gametable.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(400,400)))
 db.gametable.is_pc.default = False
 db.gametable.is_pc.label = 'PC'
+db.gametable.is_mc.default = False
+db.gametable.is_mc.label = 'Mac'
 db.gametable.is_xb.default = False
 db.gametable.is_xb.label = 'xbox'
 db.gametable.is_ps.default = False
@@ -113,7 +95,8 @@ db.recipe.user_id.readable = False
 db.recipe.user_id.writable = False
 db.recipe.creation_date.readable = False
 db.recipe.creation_date.writable = False
-db.recipe.body.represent = represent_content
+#db.recipe.body.represent = represent_content
 db.recipe.body.label = 'Description'
 db.recipe.craft_time.default = 0
+db.recipe.result_amount.default = 1
 db.recipe.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(200,200)))
