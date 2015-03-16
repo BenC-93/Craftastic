@@ -33,6 +33,21 @@ def index():
 
 # Individual game information (editable), grid of recipes for that game
 def games():
+    def generate_view_button(row):
+        r = db(db.recipetable.id == row.id).select().first()
+        b = A('View',_class='btn',_href=URL('default','recipes',args=[r.title],vars=dict(g_id=game_id)))
+        return b
+    
+    def generate_item_desc(row):
+        rt = db(db.recipetable.id == row.id).select().first()
+        r = db(db.recipe.recip_id == rt.id).select(orderby=~db.recipe.creation_date).first()
+        return r.body
+    
+    def generate_item_game_ver(row):
+        rt = db(db.recipetable.id == row.id).select().first()
+        r = db(db.recipe.recip_id == rt.id).select(orderby=~db.recipe.creation_date).first()
+        return r.game_ver
+    
     title = request.args(0) or 'unknown game'
     display_title = title.title()
     editing = True if request.vars.edit=='y' else False
@@ -50,16 +65,27 @@ def games():
     else: # not editing
         if game_id is not None:
             content = SQLFORM(db.gametable,record=db.gametable(game_id),readonly=True)
-            try:
-                rt = (db.recipetable.game_id == game_id)
+            #try:
+            rt = (db.recipetable.game_id == game_id)
                 #q = (db.recipe.recip_id == rt.id)
-                grid = SQLFORM.grid(rt,
-                                    fields=[db.recipetable.title,
-                                            #db.recipe.author,
-                                            ],
-                                    )
-            except:
-                grid = 'There are no crafting recipes yet. Create some!'
+            links = [dict(header='Description',body=generate_item_desc),
+                     dict(header='Game Version',body=generate_item_game_ver),
+                     dict(header='',body=generate_view_button)]
+            grid = SQLFORM.grid(rt,
+                                fields=[db.recipetable.title,
+                                        #db.recipe.author,
+                                        ],
+                                create=False,
+                                details=False,
+                                editable=False,
+                                deletable=False,
+                                user_signature=False,
+                                csv=False,
+                                searchable=False,
+                                links=links,
+                                )
+            #except:
+                #grid = 'There are no crafting recipes yet. Create some!'
             form = FORM.confirm('Edit',{'Games List':URL('default','index')})
             if form.accepted:
                 if auth.user:
@@ -172,6 +198,7 @@ def history():
     form = SQLFORM.grid(recip,
                         fields=[db.recipe.author,
                                 db.recipe.game_ver,
+                                db.recipe.body,
                                 db.recipe.item_names,
                                 db.recipe.item_amount,
                                 db.recipe.craft_time,
