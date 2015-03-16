@@ -1,6 +1,12 @@
 {{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
 {{extend 'layout.html'}}
 
-<h1>"{{=display_title}}" Revision History</h1>
+<h1>{{=game_name.title()}}</h1>
+<p>
+    {{=A('Back',_class='btn',_href=URL('default','recipes',args=[display_title.lower()],vars=dict(g_id=g_id)))}}
+    {{=A('Recipe list',_class='btn',_href=URL('default','games',args=[game_name]))}}
+    {{=A('Games list',_class='btn',_href=URL('default','index'))}}
+</p>
+<h3>"{{=display_title}}" Recipe History</h3>
 
 {{=form}}

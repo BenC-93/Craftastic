@@ -131,7 +131,7 @@ def recipes():
             #s = r.body if r is not None else ''
             #content = represent_wiki(s)
             content = SQLFORM(db.recipe,record=db.recipe(recip_id),readonly=True)
-            form = FORM.confirm('Edit',{'History':URL('default','history2',args=[title]),'Games List':URL('default','index')})
+            form = FORM.confirm('Edit',{'History':URL('default','history',args=[title],vars=dict(recip_id=recip_id,g_id=g_id))})
             if form.accepted:
                 if auth.user:
                     redirect(URL('default','recipes',args=[title],vars=dict(g_id=g_id,edit='y')))
@@ -164,13 +164,18 @@ def history():
     
     title = request.args(0)
     display_title = title.title()
-    page = db(db.pagetable.title == title).select().first()
-    r = (db.revision.page_id == page.id)
+    g_id = request.vars.g_id
+    game_name = db.gametable(g_id).title
+    recip_id = request.vars.recip_id if request.vars.recip_id is not None else None
+    recip = (db.recipe.recip_id == recip_id)
     
-    form = SQLFORM.grid(r,
-                        fields=[db.revision.author,
-                                db.revision.creation_date,
-                                db.revision.comments],
+    form = SQLFORM.grid(recip,
+                        fields=[db.recipe.author,
+                                db.recipe.game_ver,
+                                db.recipe.item_names,
+                                db.recipe.item_amount,
+                                db.recipe.craft_time,
+                                ],
                         create=False,
                         details=False,
                         editable=False,
@@ -178,17 +183,22 @@ def history():
                         user_signature=False,
                         csv=False,
                         searchable=False,
-                        orderby=~db.revision.creation_date,
+                        orderby=~db.recipe.creation_date,
                         links=links)
     
-    return dict(display_title=display_title,form=form)
+    return dict(game_name=game_name,g_id=g_id,display_title=display_title,form=form)
     
 def revert():
     """This reverts a topic to a previous revision."""
-    r = db.revision[request.args(0)]
-    db.revision.insert(page_id=r.page_id,
-                       body=r.body,
-                       comments='Revert to '+r.creation_date.strftime("%Y-%m-%d %H:%M:%S")+' UTC')
+    r = db.recipe[request.args(0)]
+    db.recipe.insert(recip_id=r.recip_id,
+                     game_ver=r.game_ver,
+                     body=r.body,
+                     item_names=r.item_names,
+                     item_amount=r.item_amount,
+                     craft_time=r.craft_time,
+                     picture=r.picture,
+                     )
     redirect(URL('default','index'))
     
 
