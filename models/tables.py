@@ -2,6 +2,7 @@
 from datetime import datetime
 import re
 import unittest
+import os
 
 def get_first_name():
     name = 'Anon User'
@@ -75,6 +76,7 @@ db.gametable.body.label = 'Description'
 db.gametable.amount.readable = False
 db.gametable.amount.writable = False
 db.gametable.amount.label = 'Recipes'
+db.gametable.picture.uploadfolder = os.path.join(request.folder,'uploads')
 db.gametable.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(400,400)))
 db.gametable.is_pc.default = False
 db.gametable.is_pc.label = 'PC'
@@ -99,4 +101,5 @@ db.recipe.body.represent = represent_content
 db.recipe.body.label = 'Description'
 db.recipe.craft_time.default = 0
 db.recipe.result_amount.default = 1
+db.recipe.picture.uploadfolder = os.path.join(request.folder,'uploads')
 db.recipe.picture.requires = IS_EMPTY_OR(IS_IMAGE(maxsize=(200,200)))

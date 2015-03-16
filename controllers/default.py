@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
 
 def index():
     def generate_view_button(row):
@@ -130,7 +131,7 @@ def recipes():
                                Field('item_amount','list:integer',default=i_a),
                                Field('craft_time','double',default=ct),
                                Field('result_amount','double',default=ra),
-                               Field('picture','upload'),
+                               Field('picture','upload',uploadfolder=os.path.join(request.folder,'uploads')),
                                )
         form.add_button('Cancel',URL('default','games',args=[game_name]))
         if form.process().accepted:
